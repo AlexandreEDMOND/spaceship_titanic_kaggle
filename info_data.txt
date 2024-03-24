@@ -1,0 +1,105 @@
+
+
+train.csv
+
+    PassengerId : 
+        Format : string 
+        Exemple : gggg_pp
+        Info :  gggg  => Id du groupe
+                pp    => Id du passager dans le groupe
+        Exploitation :
+            - Regroupe les passagers par leur Id de groupe 
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+    
+    HomePlanet :
+        Format : string
+        Exemple : Earth
+        Info :  Représente la planète d'origine 
+                Chaque passager est divisé en 3 classes (Earth / Europa / Mars)
+        Exploitation :
+            - Regroupe les passagers par leur planète d'origine
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+
+    CryoSleep :
+        Format : bool
+        Exemple : True
+        Info : Savoir si le passager est en Cryo
+        Exploitation :
+            - Regroupe les passagers par leur état
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+    
+    Cabin :
+        Format : string
+        Exemple : deck/num/side
+        Info :  deck    => ????
+                num     => ????
+                side    => Divisé en 2 parties (P et S)
+        Exploitation :
+            - Regroupe les passagers par leur "side"
+            - Essayer de trouver des infos sur "deck" et "num"
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance
+    
+    Destination :
+        Format : string
+        Exemple : TRAPPIST-1e
+        Info :  Représente la planète de Destination
+                Chaque passager est divisé en 3 classes (TRAPPIST-1e / PSO J318.5-22 / 55 Cancri e)
+        Exploitation :
+            - Regroupe les passagers par la destination
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+    
+    Age :
+        Fromat : int
+        Exemple : 14.0
+        Info : Représente l'âge du passager
+        Exploitation :
+            - Regroupe les passagers par des tranches d'âge (5 ans / 10 ans)
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+    
+    VIP :
+        Format : bool
+        Exemple : True
+        Info : Savoir si le passager est VIP
+        Exploitation :
+            - Regroupe les passagers entre VIP et non-VIP
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+    
+    RoomService, FoodCourt, ShoppingMall, Spa, VRDeck :
+        Format : int
+        Exemple : 964.0
+        Info :  Représente la somme dépensée par le passager
+                Faire la somme de ces 5 valeurs peut représenter le niveau de richesse du passager
+        Exploitation :
+            - Regrouper par dépenses dans chaque domaine
+            - Regroupe les passagers en tranche d'argent dépensé
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+    
+    Name :
+        Format : string
+        Exemple : Solam Susent
+        Info : Représente le nom du passager
+        Exploitation :
+            - Regrouper par même nom de famille (garder les familles de plus de 5 membres)
+            - Voir quoi faire avec les doublons
+        Vérification de l'utilité :
+            - Voir si certains groupes survivent plus que d'autres ou l'inverse
+                => Signifie que cela a de l'importance 
+    
+
+    
