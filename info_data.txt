@@ -7,56 +7,125 @@ train.csv
         Exemple : gggg_pp
         Info :  gggg  => Id du groupe
                 pp    => Id du passager dans le groupe
+
+                Tableau du nombres de groupes avec 1 jusqu'à 8 personnes
+                    1    4021
+                    2     632
+                    3     235
+                    4      62
+                    5      34
+                    6      20
+                    7      10
+                    8       1
+
+                4021 sont seules dans leur groupes
+                
+                Corrélation entre Id du groupe et booléen : 0.023215990148850833
+
         Exploitation :
             - Regroupe les passagers par leur Id de groupe 
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance 
+        Conclusion :
+            - Beaucoup de personnes (4021) sont dans des groupes tous seul
+            - 992 personnes sont dans des groupes
+            - A voir si dans les données de test, il y a beaucoup de personnes qui sont liée 
+                à des groupes des données de train
+        
     
     HomePlanet :
         Format : string
         Exemple : Earth
         Info :  Représente la planète d'origine 
                 Chaque passager est divisé en 3 classes (Earth / Europa / Mars)
+
+                Proportion pour chaque planète de True :
+                    Europa      0.6598924088463838
+                    Earth       0.42568704430734716
+                    Mars        0.5157278712509145
+
+                mapping = { 'Earth': 0, 'Mars': 1, 'Europa': 2}
+                Corrélation entre HomePlanet et Transported : 0.19367590929518932
         Exploitation :
             - Regroupe les passagers par leur planète d'origine
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance 
+        Conclusion : 
+            - Europa et Earth semble exploitable, mais pas trop Mars
+            - Toujours utile de l'avoir en entrée du réseaux de neuronnes
+        
 
     CryoSleep :
         Format : bool
         Exemple : True
         Info : Savoir si le passager est en Cryo
+
+                Proportion pour chaque état avec True :
+                    False       0.33270940570893776
+                    True        0.8168953687821612
+
+                Corrélation entre CryoSleep et Transported : 0.46280348215356504
+
         Exploitation :
             - Regroupe les passagers par leur état
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance 
+        Conclusion :
+            - Bon coefficient de corrélation
+            - Il y a une vrai information utile
+        
     
     Cabin :
         Format : string
         Exemple : deck/num/side
-        Info :  deck    => ????
+        Info :  deck    => Divisé en 8 parties
+                            Tableau de proportion
+                                B : 0.7292993630573248
+                                F : 0.4354089219330855
+                                A : 0.48792270531400966
+                                G : 0.5210339584389255
+                                E : 0.35871156661786235
+                                C : 0.6797274275979557
+                                D : 0.42245989304812837
+                                T : 0.5
+                            
+                            {0: 'B', 1: 'F', 2: 'A', 3: 'G', 4: 'E', 5: 'C', 6: 'D', 7: 'T'}
+                            Corrélation entre deck et Transported : -0.01985464429282893
                 num     => ????
                 side    => Divisé en 2 parties (P et S)
+                            Tableau de proportion
+                                P : 0.44986200551977923
+                                S : 0.5560538116591929
+
         Exploitation :
             - Regroupe les passagers par leur "side"
             - Essayer de trouver des infos sur "deck" et "num"
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance
+        Conclusion :
+            - deck et side semble utile pour la prédiction
+        
     
     Destination :
         Format : string
         Exemple : TRAPPIST-1e
         Info :  Représente la planète de Destination
                 Chaque passager est divisé en 3 classes (TRAPPIST-1e / PSO J318.5-22 / 55 Cancri e)
+                Tableau de proportion :
+                    TRAPPIST-1e         0.46678321678321677
+                    PSO J318.5-22       0.5056179775280899
+                    55 Cancri e         0.6226012793176973
         Exploitation :
             - Regroupe les passagers par la destination
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance 
+        Conclusion :
+            - Information de la même utilité que HomePlanet
     
     Age :
         Fromat : int
@@ -67,28 +136,41 @@ train.csv
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance 
+        Conclusion : 
+            - Les enfants de moins de 15 ans survivent plus que les autres
     
     VIP :
         Format : bool
         Exemple : True
         Info : Savoir si le passager est VIP
+                Tableau de proportion
+                    False       0.5069832402234636
+                    True        0.37037037037037035
         Exploitation :
             - Regroupe les passagers entre VIP et non-VIP
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance 
+        Conclusion :
+            - Utile pour la prédiction
     
     RoomService, FoodCourt, ShoppingMall, Spa, VRDeck :
         Format : int
         Exemple : 964.0
         Info :  Représente la somme dépensée par le passager
                 Faire la somme de ces 5 valeurs peut représenter le niveau de richesse du passager
+                Tableau de proportion
+                    A dépensé           0.303359173126615
+                    N'a pas dépense     0.7869152046783626
         Exploitation :
             - Regrouper par dépenses dans chaque domaine
             - Regroupe les passagers en tranche d'argent dépensé
         Vérification de l'utilité :
             - Voir si certains groupes survivent plus que d'autres ou l'inverse
                 => Signifie que cela a de l'importance 
+        Conclusion :
+            - Utile pour la prédiction
+            - Ce qui n'ont pas dépensé ont survécu
     
     Name :
         Format : string
@@ -102,4 +184,3 @@ train.csv
                 => Signifie que cela a de l'importance 
     
 
-    
