@@ -73,6 +73,128 @@ def creation_somme_depense(dataset):
 
     return dataset
 
+def data_test(file_path, nom_fichier_test="data/test.csv"):
+
+    df = pd.read_csv(nom_fichier_test)
+
+    df = supprimer_colonne(df, ['Name'])
+
+    df['Somme_depense'] = False
+    df['Jeune'] = False
+    df['Deck'] = 'A'
+    df['Side_S'] = False
+    df['Prediction'] = False
+
+    # Définir les colonnes à vérifier pour les valeurs manquantes
+    columns_to_check = ['HomePlanet', 'CryoSleep', 'Cabin', 'Destination', 'Age', 'VIP']
+    columns_to_complete = ["RoomService", "FoodCourt", "ShoppingMall", "Spa", "VRDeck"]
+    selected_column_fro_network = ['HomePlanet', 'CryoSleep', 'Destination', 'VIP', 'Somme_depense', 'Jeune', 'Deck', 'Side_S']
+
+
+    model = Net(19)
+    model.load_state_dict(torch.load(file_path))
+    model.eval()
+
+    # Parcourir chaque ligne du DataFrame
+    for index, row in df.iterrows():
+        need_network_prediction = True
+        for col in columns_to_check:
+            if pd.isnull(row[col]): 
+                #print(f"Valeur manquante trouvée à l'id {row['PassengerId']} dans la colonne '{col}'.")
+                need_network_prediction = False
+        if need_network_prediction:
+            # On remplit les valeurs des colonnes vide par des 0
+            for name_colomn in columns_to_complete:
+                if pd.isnull(row[name_colomn]):
+                    df.loc[index, name_colomn] = 0
+            
+            somme = 0
+            for name_colomn in columns_to_complete:
+                somme += row[name_colomn]
+            
+            if somme > 0:
+                df.loc[index, 'Somme_depense'] = True
+            
+            if row['Age'] <= 15:
+                df.loc[index, 'Jeune'] = True
+            
+            df.loc[index, 'Deck'] = row['Cabin'][0]
+
+            if row['Cabin'][-1] == 'S':
+                df.loc[index, 'Side_S'] = True
+            
+            row_selected = row[selected_column_fro_network]
+            print(row_selected)
+            row_selected = pd.get_dummies(row_selected, columns=['HomePlanet', 'Destination', 'Deck'])
+            print(row_selected)
+            X = torch.tensor(row_selected.values).float()
+            predictions = model(X)
+            predicted_classes = predictions.round()
+            print(predicted_classes)
+            
+    
+    df.to_csv("train_preclean.csv")
+            
+
+
+            
+
+        
+
+def prepare_data_test(file_path, nom_fichier_test="data/test.csv"):
+
+    df = pd.read_csv(nom_fichier_test)
+    print("Taille du dataset : ", df.shape)
+
+    df = supprimer_colonne(df, ['Name'])
+    df = creation_somme_depense(df)
+
+    # Partie avec le dataset sans nan
+    dataset_sans_nan = df.dropna()
+
+    dataset_sans_nan = creation_jeune(dataset_sans_nan)
+    dataset_sans_nan = creation_deck_et_side(dataset_sans_nan)
+
+    dataset_sans_nan['CryoSleep'] = dataset_sans_nan['CryoSleep'].astype(bool)
+    dataset_sans_nan['VIP'] = dataset_sans_nan['VIP'].astype(bool)
+
+    dataset_sans_nan_2 = supprimer_colonne(dataset_sans_nan, ['PassengerId'])
+    dataset_sans_nan_2 = pd.get_dummies(dataset_sans_nan_2[:])
+
+    X = torch.tensor(dataset_sans_nan_2.values).float()
+
+    model = Net(X.shape[1])
+    model.load_state_dict(torch.load(file_path))
+    model.eval()  # Mettez le modèle en mode évaluation
+
+    # 4. Effectuer des prédictions
+    with torch.no_grad():
+        predictions = model(X)
+        predicted_classes = predictions.round()
+
+    # Afficher les prédictions
+    print(predicted_classes.shape)
+    print(dataset_sans_nan['PassengerId'])
+    # Convertir le tenseur en DataFrame pandas
+    tensor_df = pd.DataFrame(predicted_classes.numpy(), columns=['Transported'])
+    passenger_id_series = dataset_sans_nan['PassengerId'].reset_index(drop=True)
+    merged_df = pd.concat([passenger_id_series, tensor_df], axis=1)
+    print(merged_df)
+
+    # Partie avec le dataset avec nan
+    dataset_avec_nan = df[df.isnull().any(axis=1)]
+    dataset_avec_nan['Transported'] = True
+    df_nan = dataset_avec_nan[['PassengerId', 'Transported']]
+    print(df_nan)
+
+    final_df = pd.concat([merged_df, df_nan], axis = 0)
+    print(final_df)
+
+    # Conversion des valeurs 0 et 1 en valeurs booléennes
+    final_df['Transported'] = final_df['Transported'].astype(bool)
+
+    final_df.to_csv("first_submission.csv", index=False)
+
 
 def prepera_data_training(nom_fichier_analyse="data/train.csv"):
 
@@ -91,8 +213,6 @@ def prepera_data_training(nom_fichier_analyse="data/train.csv"):
 
     dataset_sans_nan = pd.get_dummies(dataset_sans_nan[:])
 
-    print(dataset_sans_nan.head(5))
-
     dataset_sans_nan.to_csv("train_clean.csv")
 
     return dataset_sans_nan
@@ -104,7 +224,7 @@ def train_network(df_train):
     y = df_train['Transported']
 
     # Diviser les données en ensembles d'entraînement et de test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     # Convertir en tenseurs PyTorch
     X_train_tensor = torch.tensor(X_train.values).float()
@@ -112,12 +232,12 @@ def train_network(df_train):
     X_test_tensor = torch.tensor(X_test.values).float()
     y_test_tensor = torch.tensor(y_test.values).float().view(-1, 1)
 
-    model = Net()
+    model = Net(X_train.shape[1])
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # Boucle d'entraînement
-    epochs = 1000
+    epochs = 100
     list_loss = []
     for epoch in range(epochs):
         # Forward pass
@@ -147,16 +267,10 @@ def train_network(df_train):
 
 
 
-data_traing = prepera_data_training()
-train_network(data_traing)
+#data_traing = prepera_data_training()
+#train_network(data_traing)
 # Dataset avec les lignes où il n'y a pas de valeurs manquantes
+#prepare_data_test()
 
-
-
-# Dataset avec les lignes où il y a des valeurs manquantes
-# dataset_avec_nan = df[df.isnull().any(axis=1)]
-# dataset_avec_nan['Transported'] = True
-# print(dataset_avec_nan.head(5))
-
-# Sauvegarder le DataFrame modifié dans un fichier CSV
-#dataset_sans_nan.to_csv("nouveau_fichier.csv", index=False)
+prepare_data_test("network_train/network_spaceship_0.7518.pth")
+#data_test("network_train/network_spaceship_0.7518.pth")
